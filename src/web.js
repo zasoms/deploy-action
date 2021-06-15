@@ -12,11 +12,10 @@ module.exports = function(config) {
     }
     const targetPath = `${ config.output }${ config.output.slice(-1) === '/' ? '' : '/' }`
     const sourcePath = path.resolve(config.workspace, './' + config.input)
-    // const zipFileName = Date.now() + '.zip'
-    const zipFileName = '1623760489611.zip'
+    const zipFileName = Date.now() + '.zip'
     const zipFile = sourcePath + '/' + zipFileName
   
-    // util.zip(sourcePath, zipFile)
+    util.zip(sourcePath, zipFile)
   
     const server = new Server({
       host: config.host,
