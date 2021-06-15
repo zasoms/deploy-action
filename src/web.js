@@ -10,19 +10,21 @@ module.exports = function(config) {
     if (!hasAcess) {
       return reject('参数配置错误，需要' + fields.join(','))
     }
-    const targetPath = `${ config.output }${ config.output.slice(0, -1) === '/' ? '' : '/' }`
+    const targetPath = `${ config.output }${ config.output.slice(-1) === '/' ? '' : '/' }`
     const sourcePath = path.resolve(config.workspace, './' + config.input)
-    const zipFileName = Date.now() + '.zip'
+    // const zipFileName = Date.now() + '.zip'
+    const zipFileName = '1623760489611.zip'
     const zipFile = sourcePath + '/' + zipFileName
   
-    util.zip(sourcePath, zipFile)
+    // util.zip(sourcePath, zipFile)
   
-    var server = new Server({
+    const server = new Server({
       host: config.host,
       port: config.port,
       username: config.username,
       password: config.password
     })
+
   
     server.connect()
       .then(() => {
@@ -33,6 +35,7 @@ module.exports = function(config) {
           })
       })
       .then(() => {
+        console.log(targetPath, zipFileName)
         return server.shell(`
           cd ${ targetPath }
           mv ${ zipFileName } /tmp

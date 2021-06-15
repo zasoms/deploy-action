@@ -5,6 +5,12 @@ inputs:
     description: '类型：message,miniprogram,web'
     required: true
     default: 'message'
+
+  # message
+  content:
+    description: '发送内容'
+
+  # web
   host: 
     description: '服务器host'
   port: 
@@ -18,6 +24,7 @@ inputs:
   output: 
     description: '服务器部署地址'
 
+  
 runs:
   using: 'node12'
   main: 'src/index.js'

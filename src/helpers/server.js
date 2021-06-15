@@ -50,8 +50,9 @@ Server.prototype.sftp = function(source, target) {
   })
 }
 Server.prototype.shell = function(cmd) {
+  const that = this
   return new Promise(function (resolve, reject) {
-    this.client.shell((err, stream) => {
+    that.client.shell((err, stream) => {
       stream.on('data', (data) => {
         // 输出部署时的信息
         console.log('data: ', data.toString());
