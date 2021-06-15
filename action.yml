@@ -1,11 +1,23 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'wescrm deploy action'
+description: 'wescrm部署action'
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
-outputs:
-  time: # id of output
-    description: 'The time we greeted you'
+  type:
+    description: '类型：message,miniprogram,web'
+    required: true
+    default: 'message'
+  host: 
+    description: '服务器host'
+  port: 
+    description: '服务器port'
+  username: 
+    description: '服务器username'
+  password: 
+    description: '服务器password'
+  input: 
+    description: '目录地址'
+  output: 
+    description: '服务器部署地址'
+
 runs:
   using: 'node12'
   main: 'src/index.js'

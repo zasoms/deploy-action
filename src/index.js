@@ -16,7 +16,21 @@ try {
 
 	switch (type) {
 		case 'web':
-			web(GITHUB_WORKSPACE, message)
+			var host = core.getInput('host')
+			var port = core.getInput('port')
+			var username = core.getInput('username')
+			var password = core.getInput('password')
+			var input = core.getInput('input')
+			var output = core.getInput('output')
+
+			web({
+				host: host,
+				port: port,
+				username: username,
+				password: password,
+				input: input,
+				input: output,
+			}, GITHUB_WORKSPACE, message)
 			break
 		case 'miniprogram':
 			break

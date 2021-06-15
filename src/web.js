@@ -1,33 +1,26 @@
 const path = require('path')
-const core = require('@actions/core')
-
 const util = require('./util')
 const Server = require('./helpers/server')
 
-module.exports = function(workspace, message) {
-  var host = core.getInput('host')
-  var port = core.getInput('port')
-  var username = core.getInput('username')
-  var password = core.getInput('password')
-  var input = core.getInput('input')
-  var output = core.getInput('output')
-
+module.exports = function(config, workspace, message) {
   const fields =['host', 'port', 'username', 'password', 'input', 'output']
-  if (!host || !port || !username || !password || !input || !output) {
+  // 简单的校验一下规则
+  const hasAcess = fields.every(item => config[item])
+  if (!hasAcess) {
     return console.log('参数配置缺失，需要' + fields.join(','))
   }
-  const targetPath = `${ output }${ output.slice(0, -1) === '/' ? '' : '/' }`
-  const sourcePath = path.resolve(workspace, './' + input)
+  const targetPath = `${ config.output }${ config.output.slice(0, -1) === '/' ? '' : '/' }`
+  const sourcePath = path.resolve(workspace, './' + config.input)
   const zipFileName = Date.now() + '.zip'
   const zipFile = sourcePath + '/' + zipFileName
 
   util.zip(sourcePath, zipFile)
 
   var server = new Server({
-    host: host,
-    port: port,
-    username: username,
-    password: password
+    host: config.host,
+    port: config.port,
+    username: config.username,
+    password: config.password
   })
 
   server.connect()
