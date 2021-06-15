@@ -10,6 +10,7 @@ try {
   // 应用类型暂时只支持message、web、miniprogram
   const type = core.getInput('type') || 'web'
 	const robotKey = core.getInput('robotkey')
+	const content = core.getInput('content')
 	const message = new Message(robotKey)
 
 	const GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE
@@ -29,13 +30,17 @@ try {
 				username: username,
 				password: password,
 				input: input,
-				input: output,
-			}, GITHUB_WORKSPACE, message)
+				output: output,
+				workspace: GITHUB_WORKSPACE
+			}).then((text) => {
+				message.sendText(content +'-'+ text)
+			}).catch((text) => {
+				message.sendText(content +'-'+ text)
+			})
 			break
 		case 'miniprogram':
 			break
 		case 'message':
-			var content = core.getInput('content')
 			if (!content) {
 				return console.log('参数配置缺失，需要content')
 			}
