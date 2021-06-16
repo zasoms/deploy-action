@@ -19,12 +19,24 @@ inputs:
     description: '服务器username'
   password: 
     description: '服务器password'
-  input: 
-    description: '目录地址'
   output: 
     description: '服务器部署地址'
 
-  
+  input: 
+    description: '目录地址'
+
+  # miniprogram 也需要input目录
+  appid:
+    description: '小程序appid'
+  version:
+    description: '小程序版本'
+  dsec:
+    description: '小程序描述'
+  privatekey:
+    description: '小程序密钥'
+  action:
+    description: '小程序动作：preview或者upload'
+
 runs:
   using: 'node12'
   main: 'src/index.js'
