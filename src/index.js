@@ -11,6 +11,7 @@ try {
   const type = core.getInput("type");
   const robotKey = core.getInput("robotkey");
   const content = core.getInput("content");
+
   const message = new Message(robotKey);
 
   const GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE;
@@ -22,7 +23,6 @@ try {
       var port = core.getInput("port");
       var username = core.getInput("username");
       var password = core.getInput("password");
-      var input = core.getInput("input");
       var output = core.getInput("output");
 
       web({
@@ -35,10 +35,10 @@ try {
         workspace: GITHUB_WORKSPACE,
       })
         .then((text) => {
-          message.sendText(content + "-" + text);
+          message.sendText(content + '-' + text);
         })
         .catch((text) => {
-          message.sendText(content + "-" + text);
+          message.sendText(content + '-' + text);
         });
       break;
     // 小程序
@@ -47,7 +47,6 @@ try {
       var version = core.getInput("version") || "1.0.0";
       var dsec = core.getInput("dsec") || "问题修复";
       var privatekey = core.getInput("privatekey");
-      var input = core.getInput("input");
       var action = core.getInput("action") || "preview";
 
       miniprogram(action, {
@@ -62,7 +61,7 @@ try {
           if (res.qrcodePath) {
             message.sendImage(res.qrcodePath);
           }
-          message.sendText(content + "提交成功");
+          message.sendText(content + res.message);
         })
         .catch((text) => {
           message.sendText(content + "提交失败:" + text);

@@ -29,9 +29,8 @@ module.exports = function (config) {
     server
       .connect()
       .then(() => {
-        return server.sftp(zipFile, targetPath + zipFileName).catch(() => {
-          reject("文件/文件夹上传失败");
-          return Promise.reject();
+        return server.sftp(zipFile, targetPath + zipFileName).catch((err) => {
+          return Promise.reject("文件/文件夹上传失败:" + err);
         });
       })
       .then(() => {
@@ -49,9 +48,13 @@ module.exports = function (config) {
             resolve("部署成功");
           })
           .catch(() => {
-            reject("部署失败");
+            return Promise.reject("部署失败");
           })
-          .then(() => server.close());
+      })
+      .then(() => server.close())
+      .catch((err) => {
+        reject(err)
+        server.close();
       });
   });
 };

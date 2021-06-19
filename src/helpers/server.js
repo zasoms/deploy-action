@@ -16,12 +16,15 @@ const Server = function (options) {
 Server.prototype.connect = function () {
   return new Promise((resolve) => {
     if (this.connecting) return resolve();
-
     const options = this.options;
+
     this.client
-      .on("ready", function () {
+      .on("ready", () => {
         this.connecting = true;
         resolve();
+      })
+      .on('error', (err) => {
+        reject(err)
       })
       .connect({
         host: options.host,
@@ -50,6 +53,10 @@ Server.prototype.sftp = function (source, target) {
 };
 Server.prototype.shell = function (cmd) {
   return new Promise((resolve, reject) => {
+    if (!this.connecting) {
+      return reject("请先链接服务器");
+    }
+
     this.client.shell((err, stream) => {
       stream
         .on("data", (data) => {

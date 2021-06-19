@@ -29,6 +29,7 @@ module.exports = function (action, config) {
     if (action === "preview") {
       weapp.preview({}, qrcodeOutputPath).then(() => {
         resolve({
+          message: '提交成功',
           qrcodePath: qrcodeOutputPath,
         }).catch((error) => {
           reject(error.toString());
@@ -38,7 +39,9 @@ module.exports = function (action, config) {
       weapp
         .upload()
         .then(() => {
-          resolve({});
+          resolve({
+            message: '提交成功'
+          });
         })
         .catch((error) => {
           reject(error.toString());
