@@ -11,6 +11,7 @@ try {
   const type = core.getInput("type");
   const robotKey = core.getInput("robotkey");
   const content = core.getInput("content");
+  const input = core.getInput("input");
 
   const message = new Message(robotKey);
 
