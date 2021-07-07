@@ -2,7 +2,7 @@ const ci = require("miniprogram-ci");
 
 const defaultSettings = {
   urlCheck: false,
-  es6: true,
+  es6: false,
   enhance: false,
   postcss: true,
   preloadBackgroundData: false,
