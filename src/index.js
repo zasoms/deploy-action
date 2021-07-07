@@ -12,6 +12,8 @@ try {
   const robotKey = core.getInput("robotkey");
   const content = core.getInput("content");
   const input = core.getInput("input");
+  const token = core.getInput("token");
+  console.log('GIT_REPO_TOKEN: ', token)
 
   const message = new Message(robotKey);
 
