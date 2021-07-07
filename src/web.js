@@ -26,6 +26,14 @@ module.exports = function (config) {
       password: config.password,
     });
 
+    
+    /*  
+    mv ${zipFileName} /tmp
+    rm -rf *
+    mv /tmp/${zipFileName} .
+    unzip -o ${zipFileName}
+    */
+    
     server
       .connect()
       .then(() => {
@@ -38,10 +46,8 @@ module.exports = function (config) {
           .shell(
             `
           cd ${targetPath}
-          mv ${zipFileName} /tmp
-          rm -rf *
-          mv /tmp/${zipFileName} .
-          unzip ${zipFileName}
+          rm -rf index.html js/ css/ static/ miniweb/
+          unzip -o ${zipFileName}
         `
           )
           .then(() => {
