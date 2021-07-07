@@ -31,10 +31,10 @@ module.exports = function (action, config) {
         resolve({
           message: '提交成功',
           qrcodePath: qrcodeOutputPath,
-        }).catch((error) => {
-          reject(error.toString());
-        });
-      });
+        })
+      }).catch((error) => {
+        reject(error.toString());
+      })
     } else {
       weapp
         .upload()
