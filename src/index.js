@@ -13,7 +13,7 @@ try {
   const content = core.getInput("content");
   const input = core.getInput("input");
   const token = core.getInput("token");
-  console.log('GIT_REPO_TOKEN: ', token)
+  console.log('GIT_REPO_TOKEN: ', '11'+token+'11')
 
   const message = new Message(robotKey);
 
