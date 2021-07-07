@@ -12,8 +12,6 @@ try {
   const robotKey = core.getInput("robotkey");
   const content = core.getInput("content");
   const input = core.getInput("input");
-  const token = core.getInput("token");
-  console.log('GIT_REPO_TOKEN: ', '11'+token+'11')
 
   const message = new Message(robotKey);
 
@@ -50,7 +48,7 @@ try {
       var version = core.getInput("version") || "1.0.0";
       var dsec = core.getInput("dsec") || "问题修复";
       var privatekey = core.getInput("privatekey");
-      var action = core.getInput("action") || "preview";
+      var action = core.getInput("action") || "upload";
 
       miniprogram(action, {
         appid: appid,
