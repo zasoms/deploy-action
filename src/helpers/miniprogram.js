@@ -1,5 +1,40 @@
 const ci = require("miniprogram-ci");
 
+const defaultSettings = {
+  urlCheck: false,
+  es6: true,
+  enhance: false,
+  postcss: true,
+  preloadBackgroundData: false,
+  minified: true,
+  newFeature: false,
+  coverView: true,
+  nodeModules: false,
+  autoAudits: false,
+  showShadowRootInWxmlPanel: true,
+  scopeDataCheck: false,
+  uglifyFileName: false,
+  checkInvalidKey: true,
+  checkSiteMap: true,
+  uploadWithSourceMap: true,
+  compileHotReLoad: false,
+  useMultiFrameRuntime: true,
+  useApiHook: true,
+  useApiHostProcess: true,
+  babelSetting: {
+    ignore: [],
+    disablePlugins: [],
+    outputPath: ''
+  },
+  bundle: false,
+  useIsolateContext: true,
+  useCompilerModule: true,
+  userConfirmedUseCompilerModuleSwitch: false,
+  userConfirmedBundleSwitch: false,
+  packNpmManually: false,
+  packNpmRelationList: [],
+  minifyWXSS: true
+}
 /**
  * 小程序ci
  * @param {*} options
@@ -22,9 +57,8 @@ MiniProgram.prototype.preview = function (setting, qrcodeOutputDest) {
     project: this.project,
     desc: this.options.desc, // 此备注将显示在“小程序助手”开发版列表中
     setting: Object.assign(
-      {
-        es6: true,
-      },
+      {},
+      defaultSettings,
       setting
     ),
     qrcodeFormat: "image",
@@ -38,9 +72,8 @@ MiniProgram.prototype.upload = function (setting) {
     version: this.options.version,
     desc: this.options.desc,
     setting: Object.assign(
-      {
-        es6: true,
-      },
+      {},
+      defaultSettings,
       setting
     ),
     // onProgressUpdate: console.log,

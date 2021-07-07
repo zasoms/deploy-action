@@ -5,6 +5,15 @@ inputs:
     description: '类型：message,miniprogram,web'
     required: true
     default: 'message'
+  
+  app: 
+    description: '项目名称'
+
+  branch: 
+    description: '项目分支名称'
+
+  input: 
+    description: '目录地址'
 
   # message
   content:
@@ -22,8 +31,6 @@ inputs:
   output: 
     description: '服务器部署地址'
 
-  input: 
-    description: '目录地址'
 
   # miniprogram 也需要input目录
   appid:
