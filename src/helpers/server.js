@@ -14,7 +14,7 @@ const Server = function (options) {
   this.client = new Client();
 };
 Server.prototype.connect = function () {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (this.connecting) return resolve();
     const options = this.options;
 
