@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const util = require("./util");
 const Server = require("./helpers/server");
 
@@ -16,6 +17,14 @@ module.exports = function (config) {
     const sourcePath = path.resolve(config.workspace, "./" + config.input);
     const zipFileName = Date.now() + ".zip";
     const zipFile = sourcePath + "/" + zipFileName;
+
+    console.log(sourcePath, zipFile)
+    console.log(targetPath, zipFile)
+
+    const files = fs.readFileSync(sourcePath)
+    console.log('所有的文件',  JSON.stringify(files))
+    const prevFiles = fs.readFileSync(path.resolve(sourcePath, '../'))
+    console.log('所有的文件',  JSON.stringify(prevFiles))
 
     util.zip(sourcePath, zipFile);
 
