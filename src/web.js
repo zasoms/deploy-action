@@ -18,13 +18,6 @@ module.exports = function (config) {
     const zipFileName = Date.now() + ".zip";
     const zipFile = sourcePath + "/" + zipFileName;
 
-    console.log(sourcePath, zipFile)
-    console.log(targetPath, zipFile)
-
-    const files = fs.readFileSync(sourcePath)
-    console.log('所有的文件',  JSON.stringify(files))
-    const prevFiles = fs.readFileSync(path.resolve(sourcePath, '../'))
-    console.log('所有的文件',  JSON.stringify(prevFiles))
 
     util.zip(sourcePath, zipFile);
 
@@ -68,8 +61,9 @@ module.exports = function (config) {
       })
       .then(() => server.close())
       .catch((err) => {
-        reject(err)
+        console.log((err))
         server.close();
+        reject(err)
       });
   });
 };
