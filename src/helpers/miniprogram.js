@@ -3,9 +3,9 @@ const ci = require("miniprogram-ci");
 const defaultSettings = {
   es6: true,
   es7: false,
-  minify: true,
+  minify: false,
   codeProtect: false,
-  minifyJS: true,
+  minifyJS: false,
   minifyWXML: true,
   minifyWXSS: true,
   autoPrefixWXSS: true,
