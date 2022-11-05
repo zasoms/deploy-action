@@ -4,7 +4,7 @@ const defaultSettings = {
   es6: true,
   es7: false,
   minify: true,
-  codeProtect: true,
+  codeProtect: false,
   minifyJS: true,
   minifyWXML: true,
   minifyWXSS: true,
