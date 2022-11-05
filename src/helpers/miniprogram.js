@@ -1,15 +1,39 @@
 const ci = require("miniprogram-ci");
 
 const defaultSettings = {
-  es6: true,
-  es7: false,
-  minify: false,
-  codeProtect: false,
-  minifyJS: false,
-  minifyWXML: true,
-  minifyWXSS: true,
-  autoPrefixWXSS: true,
-  disableUseStrict: false,
+  urlCheck: false,
+  es6: false,
+  enhance: false,
+  postcss: true,
+  preloadBackgroundData: false,
+  minified: true,
+  newFeature: false,
+  coverView: true,
+  nodeModules: false,
+  autoAudits: false,
+  showShadowRootInWxmlPanel: true,
+  scopeDataCheck: false,
+  uglifyFileName: false,
+  checkInvalidKey: true,
+  checkSiteMap: true,
+  uploadWithSourceMap: true,
+  compileHotReLoad: false,
+  useMultiFrameRuntime: true,
+  useApiHook: true,
+  useApiHostProcess: true,
+  babelSetting: {
+    ignore: [],
+    disablePlugins: [],
+    outputPath: ''
+  },
+  bundle: false,
+  useIsolateContext: true,
+  useCompilerModule: true,
+  userConfirmedUseCompilerModuleSwitch: false,
+  userConfirmedBundleSwitch: false,
+  packNpmManually: false,
+  packNpmRelationList: [],
+  minifyWXSS: true
 }
 /**
  * 小程序ci
