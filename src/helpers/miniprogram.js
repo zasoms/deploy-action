@@ -1,13 +1,13 @@
 const ci = require("miniprogram-ci");
 
 const defaultSettings = {
-  urlCheck: false,
-  es6: false,
+  urlCheck: true,
+  es6: true,
   enhance: false,
   postcss: true,
   preloadBackgroundData: false,
   minified: true,
-  newFeature: false,
+  newFeature: true,
   coverView: true,
   nodeModules: false,
   autoAudits: false,
@@ -33,7 +33,9 @@ const defaultSettings = {
   userConfirmedBundleSwitch: false,
   packNpmManually: false,
   packNpmRelationList: [],
-  minifyWXSS: true
+  minifyWXSS: true,
+  autoPrefixWXSS: true,
+  ignoreUploadUnusedFiles: true
 }
 /**
  * 小程序ci
