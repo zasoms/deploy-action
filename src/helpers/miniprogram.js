@@ -21,11 +21,6 @@ const defaultSettings = {
   useMultiFrameRuntime: true,
   useApiHook: true,
   useApiHostProcess: true,
-  babelSetting: {
-    ignore: [],
-    disablePlugins: [],
-    outputPath: ''
-  },
   bundle: false,
   useIsolateContext: true,
   useCompilerModule: true,
