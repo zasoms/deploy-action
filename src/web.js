@@ -50,6 +50,7 @@ module.exports = function (config) {
           cd ${targetPath}
           rm -rf index.html js/ css/ static/ miniweb/
           unzip -o ${zipFileName}
+          rm -rf ${ zipFileName }
         `
           )
           .then(() => {
