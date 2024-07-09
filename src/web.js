@@ -36,7 +36,7 @@ module.exports = function (config) {
     console.log(getAllFileNames(sourcePath))
     // console.log(fs.sta)
     fs.stat(zipFile, (err, stats) => {
-      conosle.log(stats)
+      console.log(stats)
     })
 
     const server = new Server({
