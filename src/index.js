@@ -16,7 +16,7 @@ try {
   const message = new Message(robotKey);
 
   const GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE;
-
+  console.log(GITHUB_WORKSPACE)
   switch (type) {
     // web应用
     case "web":

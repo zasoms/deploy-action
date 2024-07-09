@@ -17,6 +17,7 @@ module.exports = function (config) {
     const sourcePath = path.resolve(config.workspace, "./" + config.input);
     const zipFileName = Date.now() + ".zip";
     const zipFile = sourcePath + "/" + zipFileName;
+    console.log(1231234, sourcePath, zipFile)
 
 
     util.zip(sourcePath, zipFile);
