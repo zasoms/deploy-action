@@ -3,6 +3,18 @@ const fs = require("fs");
 const util = require("./util");
 const Server = require("./helpers/server");
 
+function getAllFileNames(folderPath) {
+  const files = fs.readdirSync(folderPath);
+  const fileNames = [];
+  
+  files.forEach(file => {
+    const fileName = file.split('/').pop(); // 获取文件名
+    fileNames.push(fileName);
+  });
+  
+  return fileNames;
+}
+
 module.exports = function (config) {
   return new Promise((resolve, reject) => {
     const fields = ["host", "port", "username", "password", "input", "output"];
@@ -21,6 +33,7 @@ module.exports = function (config) {
 
 
     util.zip(sourcePath, zipFile);
+    console.log(getAllFileNames(sourcePath))
 
     const server = new Server({
       host: config.host,
