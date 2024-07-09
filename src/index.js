@@ -9,7 +9,8 @@ const miniprogram = require("./miniprogram");
 try {
   // 应用类型暂时只支持message、web、miniprogram
   const type = core.getInput("type");
-  const robotKey = core.getInput("robotkey");
+  // const robotKey = core.getInput("robotkey");
+  const robotKey = '';
   const content = core.getInput("content");
   const input = core.getInput("input");
 

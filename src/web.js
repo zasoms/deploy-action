@@ -35,7 +35,7 @@ module.exports = function (config) {
     util.zip(sourcePath, zipFile);
     console.log(getAllFileNames(sourcePath))
     // console.log(fs.sta)
-    fs.stats(zipFile, (err, stats) => {
+    fs.stat(zipFile, (err, stats) => {
       conosle.log(stats)
     })
 
