@@ -4,7 +4,7 @@ const Server = require("./helpers/server");
 
 module.exports = function (config) {
   return new Promise((resolve, reject) => {
-    const fields = ["host", "port", "username", "password", "input", "output"];
+    const fields = ["host", "port", "username", "password", "output"];
     // 简单的校验一下规则
     const hasAcess = fields.every((item) => config[item]);
     if (!hasAcess) {
