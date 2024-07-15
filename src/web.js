@@ -1,6 +1,5 @@
 const path = require("path");
 const fs = require("fs");
-const util = require("./util");
 const Server = require("./helpers/server");
 
 module.exports = function (config) {
@@ -14,12 +13,8 @@ module.exports = function (config) {
     const targetPath = `${config.output}${
       config.output.slice(-1) === "/" ? "" : "/"
     }`;
-    const sourcePath = path.resolve(config.workspace, "./" + config.input);
-    const zipFileName = Date.now() + ".zip";
-    const zipFile = sourcePath + "/" + zipFileName;
-
-
-    util.zip(sourcePath, zipFile);
+    const zipFileName = "dist.zip";
+    const zipFile = path.resolve(config.workspace, "./" + zipFileName);
 
     const server = new Server({
       host: config.host,
