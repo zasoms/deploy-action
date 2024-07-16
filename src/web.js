@@ -34,13 +34,6 @@ module.exports = function (config) {
     server
       .connect()
       .then(() => {
-        return server
-          .shell( `mv -f dist.zip dist.bak.zip`)
-          .catch(() => {
-            return Promise.reject("部署失败");
-          })
-      })
-      .then(() => {
         return server.sftp(zipFile, targetPath + zipFileName).catch((err) => {
           return Promise.reject("文件/文件夹上传失败:" + err);
         });
