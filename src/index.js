@@ -1,13 +1,9 @@
 const core = require("@actions/core");
-// const github = require('@actions/github')
-
 const Message = require("./helpers/message");
-
 const web = require("./web");
-const miniprogram = require("./miniprogram");
 
 try {
-  // 应用类型暂时只支持message、web、miniprogram
+  // 应用类型暂时只支持message、web
   const type = core.getInput("type");
   const robotKey = core.getInput("robotkey");
   const content = core.getInput("content");
@@ -40,32 +36,6 @@ try {
         })
         .catch((text) => {
           message.sendText(content + '-' + text);
-        });
-      break;
-    // 小程序
-    case "miniprogram":
-      var appid = core.getInput("appid");
-      var version = core.getInput("version") || "1.0.0";
-      var dsec = core.getInput("dsec") || "问题修复";
-      var privatekey = core.getInput("privatekey");
-      var action = core.getInput("action") || "upload";
-
-      miniprogram(action, {
-        appid: appid,
-        version: version,
-        dsec: dsec,
-        input: input,
-        privatekey: privatekey,
-        workspace: GITHUB_WORKSPACE,
-      })
-        .then((res) => {
-          if (res.qrcodePath) {
-            message.sendImage(res.qrcodePath);
-          }
-          message.sendText(content + res.message);
-        })
-        .catch((text) => {
-          message.sendText(content + "提交失败:" + text);
         });
       break;
     // 发送消息
