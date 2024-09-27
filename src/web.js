@@ -13,7 +13,7 @@ module.exports = function (config) {
     const targetPath = `${config.output}${
       config.output.slice(-1) === "/" ? "" : "/"
     }`;
-    const zipFileName = "dist.zip";
+    const zipFileName = config.input ? config.input : "dist.zip";
     const zipFile = path.resolve(config.workspace, "./" + zipFileName);
 
     const server = new Server({
@@ -49,7 +49,8 @@ module.exports = function (config) {
           .then(() => {
             resolve("部署成功");
           })
-          .catch(() => {
+          .catch((e) => {
+            console.log(e)
             return Promise.reject("部署失败");
           })
       })
