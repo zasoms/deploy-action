@@ -21,6 +21,7 @@ try {
       var username = core.getInput("username");
       var password = core.getInput("password");
       var output = core.getInput("output");
+      var script = core.getInput("script");
 
       web({
         host: host,
@@ -29,6 +30,7 @@ try {
         password: password,
         input: input,
         output: output,
+        script: script,
         workspace: GITHUB_WORKSPACE,
       })
         .then((text) => {

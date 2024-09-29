@@ -14,6 +14,10 @@ module.exports = function (config) {
       config.output.slice(-1) === "/" ? "" : "/"
     }`;
     const zipFileName = config.input ? config.input : "dist.zip";
+    const script = config.script || `
+      cd ${targetPath}
+      ${ zipFileName.includes('tar.gz') ? `tar -zxvf ${ zipFileName }` : `unzip -o ${zipFileName}`}
+    `
     const zipFile = path.resolve(config.workspace, "./" + zipFileName);
 
     const server = new Server({
@@ -40,12 +44,7 @@ module.exports = function (config) {
       })
       .then(() => {
         return server
-          .shell(
-            `
-          cd ${targetPath}
-          unzip -o ${zipFileName}
-        `
-          )
+          .shell(script)
           .then(() => {
             resolve("部署成功");
           })
