@@ -16,7 +16,7 @@ module.exports = function (config) {
     const zipFileName = config.input ? config.input : "dist.zip";
     const script = config.script || `
       cd ${targetPath}
-      ${ zipFileName.includes('tar.gz') ? `tar -zxvf ${ zipFileName }` : `unzip -o ${zipFileName}`}
+      ${ zipFileName.includes('tar.gz') ? `tar -zxvf ${ zipFileName } --overwrite` : `unzip -o ${zipFileName}`}
     `
     const zipFile = path.resolve(config.workspace, "./" + zipFileName);
 
