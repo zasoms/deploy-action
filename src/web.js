@@ -81,42 +81,41 @@ module.exports = function deploy(config) {
       });
 
       // 执行部署流程
-      server.connect()
-        .then(() => {
-          return server.sftp(zipFile, targetPath + zipFileName)
-            .catch(err => {
-              throw new Error(`文件上传失败: ${err.message}`);
-            });
-        })
-        .then(() => {
-          const script = buildDeployScript(config, targetPath, zipFileName);
-          return server.shell(script)
-            .catch(err => {
-              throw new Error(`部署脚本执行失败: ${err.message}`);
-            });
-        })
-        .then(() => {
-          resolve("部署成功");
-        })
-        .catch(error => {
-          reject(error);
-        })
-        .finally(() => {
-          // 确保在任何情况下都关闭服务器连接
-          if (server) {
-            server.close()
-              .catch(err => {
-                console.error('关闭服务器连接时发生错误:', err);
-              });
-          }
+      
+    server
+      .connect()
+      .then(() => {
+        return server.sftp(zipFile, targetPath + zipFileName).catch((err) => {
+          return Promise.reject("文件/文件夹上传失败:" + err);
         });
+      })
+      .then(() => {
+        return server
+          .shell(
+            `
+          cd ${targetPath}
+          unzip -o ${zipFileName}
+        `
+          )
+          .then(() => {
+            resolve("部署成功");
+          })
+          .catch((e) => {
+            console.log(e)
+            return Promise.reject("部署失败");
+          })
+      })
+      .then(() => server.close())
+      .catch((err) => {
+        console.log((err))
+        server.close();
+        reject(err)
+      });
     } catch (error) {
       // 处理同步代码中的错误
       if (server) {
         server.close()
-          .catch(err => {
-            console.error('关闭服务器连接时发生错误:', err);
-          });
+        console.error('关闭服务器连接时发生错误:', err);
       }
       reject(error);
     }
