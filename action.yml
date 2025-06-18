@@ -30,7 +30,13 @@ inputs:
     description: '服务器password'
   output: 
     description: '服务器部署地址'
-
+  clean:
+    description: '是否清理目标目录'
+    required: false
+    default: 'false'
+  cleanPaths:
+    description: '要清理的文件或目录列表，多个路径用逗号分隔。例如：dist,temp,logs'
+    required: false
 
 runs:
   using: 'node12'

@@ -17,11 +17,18 @@ try {
     // web应用
     case "web":
       var host = core.getInput("host");
-      var port = Number(core.getInput("port"));
+      var port = core.getInput("port");
       var username = core.getInput("username");
       var password = core.getInput("password");
       var output = core.getInput("output");
       var script = core.getInput("script");
+      var clean = core.getInput("clean") === "true";
+      var cleanPaths = core.getInput("cleanPaths");
+
+      // 处理清理路径
+      const cleanPathsArray = cleanPaths
+        ? cleanPaths.split(",").map(p => p.trim()).filter(Boolean)
+        : [];
 
       web({
         host: host,
@@ -32,6 +39,8 @@ try {
         output: output,
         script: script,
         workspace: GITHUB_WORKSPACE,
+        clean: clean,
+        cleanPaths: cleanPathsArray
       })
         .then((text) => {
           message.sendText(content + '-' + text);
