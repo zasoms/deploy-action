@@ -17,7 +17,7 @@ try {
     // web应用
     case "web":
       var host = core.getInput("host");
-      var port = core.getInput("port");
+      var port = Number(core.getInput("port"));
       var username = core.getInput("username");
       var password = core.getInput("password");
       var output = core.getInput("output");
