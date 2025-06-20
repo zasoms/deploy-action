@@ -13,7 +13,7 @@ module.exports = function (config) {
     const targetPath = `${config.output}${config.output.endsWith("/") ? "" : "/"}`
     const zipFileName = config.input ? config.input : "dist.zip"
     
-    if (targetPath.includes("..") || targetPath.includes("/")) {
+    if (targetPath.includes("..") || targetPath === "/") {
       return reject("目标路径不能包含..或/")
     }
     // 处理清理文件的逻辑
