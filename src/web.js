@@ -10,9 +10,12 @@ module.exports = function (config) {
     if (!hasAcess) {
       return reject("参数配置错误，需要" + fields.join(","))
     }
-    const targetPath = `${config.output}${config.output.slice(-1) === "/" ? "" : "/"}`
+    const targetPath = `${config.output}${config.output.endsWith("/") ? "" : "/"}`
     const zipFileName = config.input ? config.input : "dist.zip"
     
+    if (targetPath.includes("..") || targetPath.includes("/")) {
+      return reject("目标路径不能包含..或/")
+    }
     // 处理清理文件的逻辑
     let cleanCommand = ""
     if (config.clean) {
@@ -21,7 +24,7 @@ module.exports = function (config) {
         const safePaths = config.cleanPaths
           .map(p => p.trim())
           .filter(p => p && !p.includes("..") && !p.startsWith("/"))
-          .map(p => `rm -rf "${targetPath}${p}"`)
+          .map(p => `rm -rf ${p}`)
         cleanCommand = safePaths.join(" && ")
       } else {
         console.warn("警告: 未指定清理路径，跳过清理步骤")
