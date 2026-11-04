@@ -41,6 +41,21 @@ const assertCleanPaths = (cleanPaths) => {
   return list
 }
 
+/**
+ * 远程包名唯一化：避免同目录并发部署互相覆盖同名包
+ * 例：dist.tar.gz -> dist-1723456789-1.tar.gz
+ */
+const uniquePackage = (file) => {
+  const ext = /\.[^.]+$/.test(file) ? file.slice(file.lastIndexOf(".")) : ""
+  const storedExt = /\.tar\.gz$/.test(file) ? ".tar.gz" : ext
+  const base = file.slice(0, file.length - storedExt.length).replace(/[^A-Za-z0-9._-]/g, "") || "dist"
+  const suffix = process.env.GITHUB_RUN_ID
+    ? `${process.env.GITHUB_RUN_ID}-${process.env.GITHUB_RUN_ATTEMPT || "1"}`
+    : String(Date.now())
+  const head = base.length > 90 ? base.slice(0, 90) : base
+  return `${head}-${suffix}${storedExt}`
+}
+
 module.exports = function (config) {
   return new Promise((resolve, reject) => {
     const fields = ["host", "port", "username", "output", "input"]
@@ -66,9 +81,11 @@ module.exports = function (config) {
     }
 
     // 统一协议：deploy <目标目录> <包名> [清理项,清理项...]
+    // 默认上传时用唯一包名，避免并发覆盖
+    const remoteFile = config.script ? packageFile : uniquePackage(packageFile)
     const cmd =
       config.script ||
-      ["deploy", targetDir, packageFile, cleanList.join(",")]
+      ["deploy", targetDir, remoteFile, cleanList.join(",")]
         .filter((item, index) => item || index < 3)
         .join(" ")
 
@@ -87,7 +104,7 @@ module.exports = function (config) {
       .connect()
       .then(() => {
         return server
-          .sftp(localFile, `${targetDir}/${packageFile}`)
+          .sftp(localFile, `${targetDir}/${remoteFile}`)
           .catch((err) => {
             return Promise.reject("文件上传失败:" + err)
           })
