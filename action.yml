@@ -27,7 +27,11 @@ inputs:
   username: 
     description: '服务器username'
   password: 
-    description: '服务器password'
+    description: '服务器password（与 key 二选一，已废弃）'
+  key:
+    description: '服务器 SSH 私钥全文（优先使用）'
+  script:
+    description: '自定义远程指令（默认 deploy <目标目录> <包名> <清理项>）'
   output: 
     description: '服务器部署地址'
   clean:

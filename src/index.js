@@ -20,6 +20,7 @@ try {
       var port = core.getInput("port");
       var username = core.getInput("username");
       var password = core.getInput("password");
+      var key = core.getInput("key");
       var output = core.getInput("output");
       var script = core.getInput("script");
       var clean = core.getInput("clean") === "true";
@@ -35,6 +36,7 @@ try {
         port: port,
         username: username,
         password: password,
+        key: key,
         input: input,
         output: output,
         script: script,

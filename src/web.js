@@ -1,81 +1,109 @@
 const path = require("path")
-const fs = require("fs")
 const Server = require("./helpers/server")
+
+/**
+ * 目标路径安全校验
+ */
+const assertTargetDir = (output) => {
+  if (!output) throw new Error("缺少 output(目标目录)")
+  if (!output.startsWith("/")) throw new Error("output 必须是绝对路径")
+  if (output.includes("..")) throw new Error("output 不能包含 ..")
+  const dir = output.replace(/\/+$/, "")
+  if (!dir || dir === "/") throw new Error("output 不能是根目录")
+  return dir
+}
+
+/**
+ * 包名安全校验（统一 tar.gz）
+ */
+const assertPackage = (input) => {
+  if (!input) throw new Error("缺少 input(包名，如 dist.tar.gz)")
+  const file = path.basename(input.trim())
+  if (file !== input.trim()) throw new Error("input 只能是包名，不能带路径")
+  if (!/^[A-Za-z0-9._-]{1,120}\.(tar\.gz|tgz)$/.test(file)) {
+    throw new Error("input 必须是 .tar.gz/.tgz 包名，例如 dist.tar.gz")
+  }
+  return file
+}
+
+/**
+ * 清理项安全校验
+ */
+const assertCleanPaths = (cleanPaths) => {
+  const list = (cleanPaths || [])
+    .map((p) => String(p).trim())
+    .filter(Boolean)
+  const bad = list.find(
+    (p) => p.includes("..") || p.startsWith("/") || !/^[A-Za-z0-9._-]{1,64}$/.test(p)
+  )
+  if (bad) throw new Error(`cleanPaths 含非法路径: ${bad}`)
+  if (list.length > 20) throw new Error("cleanPaths 最多 20 项")
+  return list
+}
 
 module.exports = function (config) {
   return new Promise((resolve, reject) => {
-    const fields = ["host", "port", "username", "password", "output"]
-    // 简单的校验一下规则
-    const hasAcess = fields.every((item) => config[item])
-    if (!hasAcess) {
-      return reject("参数配置错误，需要" + fields.join(","))
+    const fields = ["host", "port", "username", "output", "input"]
+    const missing = fields.filter((item) => !config[item])
+    if (missing.length) {
+      return reject("参数配置错误，缺少:" + missing.join(","))
     }
-    const targetPath = `${config.output}${config.output.endsWith("/") ? "" : "/"}`
-    const zipFileName = config.input ? config.input : "dist.zip"
-    
-    if (targetPath.includes("..") || targetPath === "/") {
-      return reject("目标路径不能包含..或/")
-    }
-    // 处理清理文件的逻辑
-    let cleanCommand = ""
-    if (config.clean) {
-      if (Array.isArray(config.cleanPaths) && config.cleanPaths.length > 0) {
-        // 对每个路径进行安全检查和处理
-        const safePaths = config.cleanPaths
-          .map(p => p.trim())
-          .filter(p => p && !p.includes("..") && !p.startsWith("/"))
-          .map(p => `rm -rf ${p}`)
-        cleanCommand = safePaths.join(" && ")
-      } else {
-        console.warn("警告: 未指定清理路径，跳过清理步骤")
-      }
+    if (!config.key && !config.password) {
+      return reject("参数配置错误，需要 key(私钥) 或 password")
     }
 
-    const script =
+    let targetDir, packageFile, cleanList
+    try {
+      targetDir = assertTargetDir(config.output)
+      packageFile = assertPackage(config.input)
+      cleanList = assertCleanPaths(config.cleanPaths)
+    } catch (e) {
+      return reject(e.message)
+    }
+
+    if (config.clean && !cleanList.length) {
+      console.warn("警告: clean=true 但未指定 cleanPaths，跳过清理步骤")
+    }
+
+    // 统一协议：deploy <目标目录> <包名> [清理项,清理项...]
+    const cmd =
       config.script ||
-      `cd ${targetPath}
-      ${cleanCommand}
-      ${zipFileName.includes("tar.gz") ? `tar -zxvf ${zipFileName} --overwrite` : `unzip -o ${zipFileName}`}
-    `
-    const zipFile = path.resolve(config.workspace, "./" + zipFileName)
+      ["deploy", targetDir, packageFile, cleanList.join(",")]
+        .filter((item, index) => item || index < 3)
+        .join(" ")
+
+    // 包在 runner 上的本地路径（input 就是包名）
+    const localFile = path.resolve(config.workspace, "./" + packageFile)
 
     const server = new Server({
       host: config.host,
       port: config.port,
       username: config.username,
+      privateKey: config.key,
       password: config.password,
     })
-
-    /*  
-    mv ${zipFileName} /tmp
-    rm -rf *
-    mv /tmp/${zipFileName} .
-    unzip -o ${zipFileName}
-    */
 
     server
       .connect()
       .then(() => {
-        return server.sftp(zipFile, targetPath + zipFileName).catch((err) => {
-          return Promise.reject("文件/文件夹上传失败:" + err)
-        })
+        return server
+          .sftp(localFile, `${targetDir}/${packageFile}`)
+          .catch((err) => {
+            return Promise.reject("文件上传失败:" + err)
+          })
       })
       .then(() => {
-        return server
-          .shell(script)
-          .then(() => {
-            resolve("部署成功")
-          })
-          .catch((e) => {
-            console.log(e)
-            return Promise.reject("部署失败")
-          })
+        console.log("deploy cmd: " + cmd)
+        return server.exec(cmd).catch((e) => Promise.reject(e))
       })
-      .then(() => server.close())
+      .then((res) => {
+        server.close()
+        resolve("部署成功" + (res && res.stdout ? ": " + res.stdout.trim() : ""))
+      })
       .catch((err) => {
         console.log(err)
         server.close()
-        reject(err)
+        reject(typeof err === "string" ? err : err.message || String(err))
       })
   })
 }
