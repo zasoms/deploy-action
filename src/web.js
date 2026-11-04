@@ -42,13 +42,14 @@ const assertCleanPaths = (cleanPaths) => {
 }
 
 /**
- * 远程包名唯一化：避免同目录并发部署互相覆盖同名包
+ * 远程包名唯一化：避免并发部署互相覆盖同名包
  * 例：dist.tar.gz -> dist-1723456789-1.tar.gz
  */
 const uniquePackage = (file) => {
-  const ext = /\.[^.]+$/.test(file) ? file.slice(file.lastIndexOf(".")) : ""
-  const storedExt = /\.tar\.gz$/.test(file) ? ".tar.gz" : ext
-  const base = file.slice(0, file.length - storedExt.length).replace(/[^A-Za-z0-9._-]/g, "") || "dist"
+  const storedExt = /\.tar\.gz$/.test(file) ? ".tar.gz" : ".tgz"
+  const base =
+    file.slice(0, file.length - storedExt.length).replace(/[^A-Za-z0-9._-]/g, "") ||
+    "dist"
   const suffix = process.env.GITHUB_RUN_ID
     ? `${process.env.GITHUB_RUN_ID}-${process.env.GITHUB_RUN_ATTEMPT || "1"}`
     : String(Date.now())
@@ -80,14 +81,9 @@ module.exports = function (config) {
       console.warn("警告: clean=true 但未指定 cleanPaths，跳过清理步骤")
     }
 
-    // 统一协议：deploy <目标目录> <包名> [清理项,清理项...]
-    // 默认上传时用唯一包名，避免并发覆盖
     const remoteFile = config.script ? packageFile : uniquePackage(packageFile)
-    const cmd =
-      config.script ||
-      ["deploy", targetDir, remoteFile, cleanList.join(",")]
-        .filter((item, index) => item || index < 3)
-        .join(" ")
+    const cleanArg = cleanList.join(",")
+    const uploadMode = (config.uploadMode || "sftp").toLowerCase()
 
     // 包在 runner 上的本地路径（input 就是包名）
     const localFile = path.resolve(config.workspace, "./" + packageFile)
@@ -98,11 +94,28 @@ module.exports = function (config) {
       username: config.username,
       privateKey: config.key,
       password: config.password,
+      knownHosts: config.knownHosts,
     })
+
+    const deployCmd = config.script
+      ? config.script
+      : ["deploy", targetDir, remoteFile, cleanArg]
+          .filter((item, index) => item || index < 3)
+          .join(" ")
 
     server
       .connect()
       .then(() => {
+        if (uploadMode === "stdin") {
+          // 服务端禁 sftp：把包从 stdin 灌给 upload 指令，写入其私有暂存目录
+          const uploadCmd = ["upload", targetDir, remoteFile]
+            .map((item) => item)
+            .join(" ")
+          console.log("upload cmd: " + uploadCmd)
+          return server
+            .execWithFile(uploadCmd, localFile)
+            .catch((err) => Promise.reject("文件上传失败:" + err))
+        }
         return server
           .sftp(localFile, `${targetDir}/${remoteFile}`)
           .catch((err) => {
@@ -110,8 +123,8 @@ module.exports = function (config) {
           })
       })
       .then(() => {
-        console.log("deploy cmd: " + cmd)
-        return server.exec(cmd).catch((e) => Promise.reject(e))
+        console.log("deploy cmd: " + deployCmd)
+        return server.exec(deployCmd)
       })
       .then((res) => {
         server.close()

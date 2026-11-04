@@ -30,6 +30,13 @@ inputs:
     description: '服务器password（与 key 二选一，已废弃）'
   key:
     description: '服务器 SSH 私钥全文（优先使用）'
+  uploadMode:
+    description: '上传方式：sftp（默认）或 stdin（服务端禁 sftp 时用，需要服务端支持 upload 指令）'
+    required: false
+    default: 'sftp'
+  knownHosts:
+    description: 'known_hosts 文件内容，用于校验服务器主机指纹（可选）'
+    required: false
   script:
     description: '自定义远程指令（默认 deploy <目标目录> <包名> <清理项>）'
   output: 

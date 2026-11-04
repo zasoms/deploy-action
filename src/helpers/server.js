@@ -1,4 +1,5 @@
 const Client = require("ssh2").Client;
+const crypto = require("crypto");
 
 /**
  * 私钥规范化：去掉首尾空白、补末尾换行（ssh2 对换行敏感）
@@ -10,17 +11,44 @@ const normalizeKey = (key) => {
 };
 
 /**
+ * 从 known_hosts 内容里取出该主机的 key 指纹（sha256 hex）
+ * 只处理明文条目；hash 过的条目（|1|salt|hash）会被忽略
+ */
+const fingerprintsFromKnownHosts = (content, host, port) => {
+  const targets = [String(host), `[${host}]:${port}`];
+  const result = [];
+  String(content || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .forEach((line) => {
+      const parts = line.split(/\s+/);
+      if (parts.length < 3) return;
+      const [hosts, keyType, keyB64] = parts;
+      if (keyType.startsWith("@")) return; // @cert-authority 等标记行
+      const matched = hosts
+        .split(",")
+        .some((h) => targets.includes(h.trim()));
+      if (!matched) return;
+      try {
+        const digest = crypto
+          .createHash("sha256")
+          .update(Buffer.from(keyB64, "base64"))
+          .digest("hex");
+        result.push(digest);
+      } catch (e) {
+        // 忽略解析不了的条目
+      }
+    });
+  return result;
+};
+
+/**
  * 服务器部署方案（SSH Key 优先，兼容密码）
  */
 const Server = function (options) {
   this.connecting = false;
-  this.options = options || {
-    host: "",
-    port: "",
-    username: "",
-    privateKey: "",
-    password: "",
-  };
+  this.options = options || {};
   this.client = new Client();
 };
 
@@ -38,6 +66,23 @@ Server.prototype.connect = function () {
       return reject("缺少认证凭据：需要 key(私钥) 或 password");
     }
 
+    const extra = {};
+    if (options.knownHosts) {
+      const allowed = fingerprintsFromKnownHosts(
+        options.knownHosts,
+        options.host,
+        options.port || 22
+      );
+      if (!allowed.length) {
+        return reject(
+          `knownHosts 里没有匹配 ${options.host}:${options.port || 22} 的条目`
+        );
+      }
+      extra.hostHash = "sha256";
+      extra.hostVerifier = (hashedKey) =>
+        allowed.some((fp) => fp === String(hashedKey).toLowerCase());
+    }
+
     this.client
       .on("ready", () => {
         this.connecting = true;
@@ -52,6 +97,7 @@ Server.prototype.connect = function () {
         username: options.username,
         readyTimeout: 30000,
         ...auth,
+        ...extra,
       });
   });
 };
@@ -113,6 +159,64 @@ Server.prototype.exec = function (cmd) {
       stream.stderr.on("data", (data) => {
         stderr += data.toString();
       });
+    });
+  });
+};
+
+/**
+ * 执行远程命令并把本地文件从 stdin 灌进去（服务端禁 sftp 时用这条）
+ */
+Server.prototype.execWithFile = function (cmd, filePath) {
+  return new Promise((resolve, reject) => {
+    if (!this.connecting) {
+      return reject("请先链接服务器");
+    }
+
+    const fs = require("fs");
+
+    this.client.exec(cmd, (err, stream) => {
+      if (err) return reject(err);
+
+      let stdout = "";
+      let stderr = "";
+      let code = null;
+      let failed = false;
+
+      stream
+        .on("data", (data) => {
+          stdout += data.toString();
+          process.stdout.write(data);
+        })
+        .on("close", (exitCode) => {
+          code = exitCode;
+          if (failed) return;
+          if (code === 0) {
+            resolve({ code, stdout, stderr });
+          } else {
+            reject(
+              `远程命令执行失败(code=${code}) ${
+                stderr.trim() || stdout.trim()
+              }`
+            );
+          }
+        });
+
+      stream.stderr.on("data", (data) => {
+        stderr += data.toString();
+      });
+
+      const rs = fs.createReadStream(filePath);
+      rs.on("error", (e) => {
+        failed = true;
+        try {
+          stream.close();
+        } catch (err) {
+          /* ignore */
+        }
+        reject("读取本地包失败: " + e.message);
+      });
+      // pipe 结束会向远程 stdin 发送 EOF
+      rs.pipe(stream);
     });
   });
 };

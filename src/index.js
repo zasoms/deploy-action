@@ -21,6 +21,8 @@ try {
       var username = core.getInput("username");
       var password = core.getInput("password");
       var key = core.getInput("key");
+      var uploadMode = core.getInput("uploadMode") || "sftp";
+      var knownHosts = core.getInput("knownHosts");
       var output = core.getInput("output");
       var script = core.getInput("script");
       var clean = core.getInput("clean") === "true";
@@ -37,6 +39,8 @@ try {
         username: username,
         password: password,
         key: key,
+        uploadMode: uploadMode,
+        knownHosts: knownHosts,
         input: input,
         output: output,
         script: script,
