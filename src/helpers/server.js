@@ -11,12 +11,41 @@ const normalizeKey = (key) => {
 };
 
 /**
+ * 主机条目是否匹配（支持明文与 HashKnownHosts 的 |1|salt|hash 形式）
+ */
+const hostsFieldMatches = (hostsField, targets) => {
+  if (!hostsField.startsWith("|1|")) {
+    return hostsField
+      .split(",")
+      .some((h) => targets.includes(h.trim()));
+  }
+  // |1|<base64 salt>|<base64 HMAC-SHA1(host)>
+  const parts = hostsField.split("|");
+  if (parts.length < 4) return false;
+  const saltB64 = parts[2];
+  const expected = parts[3];
+  try {
+    const salt = Buffer.from(saltB64, "base64");
+    return targets.some((t) => {
+      const digest = crypto
+        .createHmac("sha1", salt)
+        .update(t)
+        .digest("base64")
+        .replace(/=+$/, "");
+      return digest === expected.replace(/=+$/, "");
+    });
+  } catch (e) {
+    return false;
+  }
+};
+
+/**
  * 从 known_hosts 内容里取出该主机的 key 指纹（sha256 hex）
- * 只处理明文条目；hash 过的条目（|1|salt|hash）会被忽略
  */
 const fingerprintsFromKnownHosts = (content, host, port) => {
   const targets = [String(host), `[${host}]:${port}`];
   const result = [];
+  fingerprintsFromKnownHosts.seen = [];
   String(content || "")
     .split("\n")
     .map((line) => line.trim())
@@ -24,12 +53,14 @@ const fingerprintsFromKnownHosts = (content, host, port) => {
     .forEach((line) => {
       const parts = line.split(/\s+/);
       if (parts.length < 3) return;
-      const [hosts, keyType, keyB64] = parts;
+      const [hostsField, keyType, keyB64] = parts;
       if (keyType.startsWith("@")) return; // @cert-authority 等标记行
-      const matched = hosts
-        .split(",")
-        .some((h) => targets.includes(h.trim()));
-      if (!matched) return;
+      fingerprintsFromKnownHosts.seen.push(
+        hostsField.length > 40
+          ? hostsField.slice(0, 40) + "…"
+          : hostsField
+      );
+      if (!hostsFieldMatches(hostsField, targets)) return;
       try {
         const digest = crypto
           .createHash("sha256")
@@ -74,8 +105,14 @@ Server.prototype.connect = function () {
         options.port || 22
       );
       if (!allowed.length) {
+        const seen = fingerprintsFromKnownHosts.seen || [];
         return reject(
-          `knownHosts 里没有匹配 ${options.host}:${options.port || 22} 的条目`
+          `knownHosts 里没有匹配 ${options.host}:${options.port ||
+            22} 的条目。` +
+            `已解析条目数=${seen.length}` +
+            (seen.length
+              ? `，主机字段示例=${seen.slice(0, 3).join(" / ")}`
+              : "（内容不是 known_hosts 格式，或只有注释行）")
         );
       }
       extra.hostHash = "sha256";
