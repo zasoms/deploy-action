@@ -128,7 +128,9 @@ module.exports = function (config) {
       })
       .then((res) => {
         server.close()
-        resolve("部署成功" + (res && res.stdout ? ": " + res.stdout.trim() : ""))
+        // 网关 stdout（含目标路径）只留在 CI 日志里，不进群通知
+        if (res && res.stdout) console.log("远端输出: " + res.stdout.trim())
+        resolve("部署成功")
       })
       .catch((err) => {
         console.log(err)
