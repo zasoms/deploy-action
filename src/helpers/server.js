@@ -1,5 +1,35 @@
 const Client = require("ssh2").Client;
 const crypto = require("crypto");
+const { utils } = require("ssh2");
+
+/**
+ * 打印认证信息与私钥指纹，方便和服务器 authorized_keys 对账（不含私钥内容）
+ */
+const logAuthInfo = (options, privateKey) => {
+  const target = `${options.username}@${options.host}:${options.port || 22}`;
+  if (!privateKey) {
+    console.log(`auth: ${target} method=password`);
+    return;
+  }
+  try {
+    const parsed = utils.parseKey(privateKey);
+    if (parsed instanceof Error) {
+      console.log(`auth: ${target} 私钥解析失败: ${parsed.message}`);
+      return;
+    }
+    const blob = parsed.getPublicSSH();
+    const fp = crypto
+      .createHash("sha256")
+      .update(blob)
+      .digest("base64")
+      .replace(/=+$/, "");
+    console.log(
+      `auth: ${target} method=publickey keyType=${parsed.type} fingerprint=SHA256:${fp}`
+    );
+  } catch (e) {
+    console.log(`auth: ${target} 私钥指纹计算失败: ${e.message}`);
+  }
+};
 
 /**
  * 私钥规范化：去掉首尾空白、补末尾换行（ssh2 对换行敏感）
@@ -96,6 +126,8 @@ Server.prototype.connect = function () {
     if (!auth.privateKey && !auth.password) {
       return reject("缺少认证凭据：需要 key(私钥) 或 password");
     }
+
+    logAuthInfo(options, auth.privateKey);
 
     const extra = {};
     if (options.knownHosts) {
